@@ -15,7 +15,8 @@ setup(
     author='Evan T. Phelps',
     author_email='ephelps@omegaas.com',
     packages=find_packages(),
-    install_requires=['scipy',
+    install_requires=['numpy',
+                      'scipy',
                       'pandas',
                       'ftfy',
                       'cchardet'
