@@ -177,7 +177,7 @@ def get_rxcui(rxname):
 
 def get_related(rxcui):
     # https://rxnav.nlm.nih.gov/REST/rxcui/174742/related?tty=SBD+SBDF
-    ttys = 'IN+PIN+MIN+SCDC+SCDG+SCD+GPCK+BN+SBDC+SBDF+SBDG+SBD+BPCK+PSN'
+    ttys = 'IN+PIN+MIN+SCDC+SCDF+SCDG+SCD+GPCK+BN+SBDC+SBDF+SBDG+SBD+BPCK+PSN'
     json = rxnorm_req('rxcui/%s/related' % rxcui,
                       tty=ttys)
     # pprint(json)
