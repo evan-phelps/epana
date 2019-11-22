@@ -34,7 +34,7 @@ def head(fname, N=10):
 
 
 def guess_encoding(fn):
-    '''Return a guess of encoding scheme of file fn.'''
+    """Return a guess of encoding scheme of file fn."""
     guess = None
     with open(fn, 'rb') as f:
         blk = b''.join(f.readlines())
@@ -67,7 +67,7 @@ def count_chars(fn, chars):
 
 
 def get_charclass(c):
-    '''Returns the class of a single character c.'''
+    """Returns the class of a single character c."""
     ccats = {string.ascii_letters: ':alpha:',
              string.digits: ':digit:',
              '%*/+-^<>=': ':math:',
@@ -90,7 +90,7 @@ def get_charclass(c):
 
 
 def iterable_to_stream(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
-    '''Yields read-only bytestrings.
+    """Yields read-only bytestrings.
 
     Lets you use an iterable (e.g. a generator) that yields bytestrings as a
     read-only input stream.  The stream implements Python 3's newer I/O API
@@ -99,7 +99,7 @@ def iterable_to_stream(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
 
     Credit to Mechanical snail on stackoverflow.com; modified for the current
     special case requiring a byte stream.
-    '''
+    """
     class IterStream(io.RawIOBase):
         def __init__(self):
             self.leftover = None
@@ -122,12 +122,12 @@ def iterable_to_stream(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
 def tag_chrs(s, cats={string.ascii_letters: 'a',
                       '0': '0',
                       string.digits: '9'}):
-    '''Returns a string of tags in one-to-one correspondence with the
+    """Returns a string of tags in one-to-one correspondence with the
     characters of the string argument s according to the character categories
     specified in the dict argument cats.
 
     TODO: Should this use the ccats of get_charclass?
-    '''
+    """
     def mapme(c):
         for k, v in cats.items():
             if c in k:
@@ -137,8 +137,8 @@ def tag_chrs(s, cats={string.ascii_letters: 'a',
 
 
 def chunk_chrs(s):
-    '''Returns two lists: characters and number of consecutive occurrences.
-    '''
+    """Returns two lists: characters and number of consecutive occurrences.
+    """
     s_reduced, s_run_counts = [], []
     c_prev, run_cnt = None, 0
     for c in s:
@@ -153,7 +153,7 @@ def chunk_chrs(s):
 
 
 def count_charclasses(fn, fix_unicode=False):
-    '''Returns character class Counter for header and body of file fn'''
+    """Returns character class Counter for header and body of file fn"""
     bcounts, bcountsH = None, None
 
     with open(fn, 'rb') as fin:
@@ -182,7 +182,7 @@ def count_charclasses(fn, fix_unicode=False):
 
 
 def fix_unicode_and_copy(fn_i, fn_o):
-    '''Fix unicode of file fn_i and copy to fn_o.'''
+    """Fix unicode of file fn_i and copy to fn_o."""
     guess = guess_encoding(fn_i)
     if guess != 'UTF-8':
         with open(fn_o, 'w', encoding='utf8') as fout, open(fn_i, 'rb') as fin:

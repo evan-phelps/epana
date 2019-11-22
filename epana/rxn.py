@@ -143,11 +143,11 @@ def get_rxcui_from_ndc(ndc):
 
 
 def get_props_df(code):
-    '''Wrapper of rxnorm get_props function adapted to work with
+    """Wrapper of rxnorm get_props function adapted to work with
     DataFrame.apply. Argument "code" is expected to be the order or admin
     "med_code," which is an rxcui in CDW.  If the code exists, this function
     checks for RxNorm properties.
-    '''
+    """
     props = None
     pnames = ['name', 'rxcui', 'synonym', 'tty']
     cnames = ['rxname', 'rxcui', 'rxsyn', 'rxtty']

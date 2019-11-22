@@ -15,7 +15,7 @@ from epana.scrubdub import isstring
 
 
 def count_outer_relations(dfs, names, keycol):
-    '''Counts the number of occurrences of each `keycol` value in each
+    """Counts the number of occurrences of each `keycol` value in each
     dataframe.
 
     Returns a dataframe with a row for each distinct `keycol` value in the
@@ -27,7 +27,7 @@ def count_outer_relations(dfs, names, keycol):
     a string that indicates the common column name that is expected to contain
     values that link each dataframe in `dfs`.  It may also be a list of column
     names to support multi-column keys.
-    '''
+    """
     kcol = [keycol] if isstring(keycol) else keycol
     dfs_reduced = [df[kcol].groupby(kcol)[kcol[0]].count()
                    for df in dfs]
@@ -38,17 +38,17 @@ def count_outer_relations(dfs, names, keycol):
 
 
 def outer_existence_pattern(dfs, names, keycol):
-    '''Like `count_outer_relations` but returns a record of booleans that
+    """Like `count_outer_relations` but returns a record of booleans that
     indicate whether or not each `keycol` value appears in each df of `dfs`
     rather than the number of occurrences of the `keycol` value.
-    '''
+    """
     ex_ptrn = count_outer_relations(dfs, names, keycol)
     ex_ptrn[names] = ex_ptrn[names] > 0
     return ex_ptrn
 
 
 def count_relational_patterns(dfs, names, keycol):
-    '''Counts the *count patterns* of the number of relations between the
+    """Counts the *count patterns* of the number of relations between the
     dataframes of `dfs`.
 
     Returns a dataframe of count patterns and number of occurrences.  The sum
@@ -60,7 +60,7 @@ def count_relational_patterns(dfs, names, keycol):
     a string that indicates the common column name that is expected to contain
     values that link each dataframe in `dfs`.  It may also be a list of column
     names to support multi-column keys.
-    '''
+    """
     outer_count = count_outer_relations(dfs, names, keycol)
     # outer_count.reset_index(inplace=True)
     patterns = outer_count.groupby(names).count().reset_index()
@@ -70,9 +70,9 @@ def count_relational_patterns(dfs, names, keycol):
 
 # TODO Maybe refactor to use outer_existence_pattern
 def count_existence_patterns(dfs, names, keycol):
-    '''Like `count_relational_patterns` (see comments) but counts
+    """Like `count_relational_patterns` (see comments) but counts
     *existence patterns* instead of *count patterns*.
-    '''
+    """
     rel_counts = count_relational_patterns(dfs, names, keycol)
     rel_counts[names] = rel_counts[names] > 0
     patterns = rel_counts.groupby(names)['COUNT'].sum().reset_index()

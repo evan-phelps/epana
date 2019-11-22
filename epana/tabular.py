@@ -27,7 +27,7 @@ from epana.scrubdub import iterable_to_stream
 
 
 def guess_dialect(fn):
-    '''Return CSV dialect assumed by csv package'''
+    """Return CSV dialect assumed by csv package"""
     dialect = None
     # , encoding=guess_encoding(fn), newline='') as fin:
     with open(fn, 'r') as fin:
@@ -36,7 +36,7 @@ def guess_dialect(fn):
 
 
 def get_df_raw(fn, fix_unicode=False):
-    '''Return a dataframe of character string types.
+    """Return a dataframe of character string types.
 
     Useful if you don't want to let Pandas automatically determine the data
     types, for example, in first steps of input data evaluation.
@@ -44,7 +44,7 @@ def get_df_raw(fn, fix_unicode=False):
     WARNING: using fix_unicode=True is very slow!  Might be better to fix and
     copy (see fix_unicode_and_copy) the file for future use, if required.
     In my experieence, it is relatively rare to have to do this anyway.
-    '''
+    """
     LOGNAME = '%s:%s' % (os.path.basename(__file__), 'get_df_raw()')
     log = get_logger(LOGNAME)
     guess = guess_encoding(fn)
@@ -214,10 +214,10 @@ def get_mem_usage(pandas_obj):
 
 
 def shrink_df(df):
-    '''Determine the smallest sized dtype for each column of the DataFrame
+    """Determine the smallest sized dtype for each column of the DataFrame
     and replace each column with a reduced copy.
     Reference https://www.dataquest.io/blog/pandas-big-data/.
-    '''
+    """
     df_int = df.select_dtypes(include=['int'])
     df[df_int.columns] = df_int.apply(pd.to_numeric, downcast='unsigned')
 
@@ -235,12 +235,12 @@ def shrink_df(df):
 
 
 def get_reduced_dtypes(df):
-    '''Determine and return the smallest sized dtype for each column of the
+    """Determine and return the smallest sized dtype for each column of the
     DataFrame.  This would normally be used when df is a large sample of an
     even larger dataset yet to be loaded.  The reduced dtypes would then be
     passed to the Pandas read_csv function when the full dataset is being
     read.
-    '''
+    """
     df2 = df.copy()
     shrink_df(df2)
     dtypes = df2.dtypes
