@@ -23,6 +23,7 @@ def cached(func):
         except KeyError:
             func.cache[key] = result = func(*args, **kwargs)
             return result
+
     return wrapper
 
 
@@ -198,3 +199,18 @@ def get_related(rxcui):
 
 def get_rxcuis_related(rxcui):
     return [rxcui for (rxcui, _, _) in get_related(rxcui)]
+
+
+def get_top_result(results):
+    if results is None:
+        return None
+    if 'candidate' not in results['approximateGroup']:
+        return (results['approximateGroup']['inputTerm'], None, None, None)
+    else:
+        grp = results['approximateGroup']
+        top = grp['candidate'][0]
+        return (grp['inputTerm'], top['rxcui'], top['score'], top['rank'])
+
+
+def get_approx_matches(desc):
+    return rxnorm_req('approximateTerm', term=desc, maxEntries=4, option=1)
