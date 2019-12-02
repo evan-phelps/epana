@@ -19,7 +19,8 @@ setup(
                       'scipy',
                       'pandas',
                       'ftfy',
-                      'cchardet'
+                      'cchardet',
+                      'requests'
                       ],
     py_modules=['logutils',
                 'scrubdub',
