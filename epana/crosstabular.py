@@ -33,7 +33,7 @@ def count_outer_relations(dfs, names, keycol):
                    for df in dfs]
     outer_count = pd.concat(dfs_reduced, axis=1, ignore_index=True).fillna(0)
     outer_count.columns = names
-    outer_count[keycol] = outer_count.index.values
+    outer_count.loc[:,keycol] = outer_count.index.values
     return outer_count
 
 
