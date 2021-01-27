@@ -81,9 +81,8 @@ def print_full(x):
             'display.max_rows', len(x),
             'display.max_columns', len(x.columns) + 1,
             'display.width', 1000,
-            'display.max_colwidth', 24):
+            'display.max_colwidth', 64):
         print(x)
-
 
 def n_null(s):
     return (s.isnull() | (s.astype(str).str.rstrip().str.len() == 0)).sum()
@@ -117,36 +116,114 @@ def vlen(s):
     lens = s1.str.len()
     return (np.mean(lens), len(lens.value_counts()), min(lens), max(lens))
 
+def min(s):
+    return s.dropna().min()
+
+def max(s):
+    return s.dropna().max()
 
 def get_summary(data, navals=None):
-    LOGNAME = '%s:%s' % (os.path.basename(__file__), 'get_summary()')
-    log = get_logger(LOGNAME)
-    df = data
-    if not isinstance(df, pd.DataFrame):
-        fn_bn = os.path.basename(data)
-        log.debug('reading %s' % fn_bn)
+        LOGNAME = '%s:%s' % (os.path.basename(__file__), 'get_summary()')
+        log = get_logger(LOGNAME)
+        df = data
+        if not isinstance(df, pd.DataFrame):
+            fn_bn = os.path.basename(data)
+            log.debug('reading %s' % fn_bn)
 
+            t0 = mstime()
+            df = pd.read_csv(data, na_values=navals, low_memory=False)
+
+            log.debug('done reading %s: %d x %d (%d msecs)' % (fn_bn,
+                                                               len(df),
+                                                               len(df.columns),
+                                                               mstime() - t0))
+
+        aggs = [n_not_null, n_null, n_zero, n_distinct, vlen,
+                min, max, most_common, n_most_common]
+        cols = list([func.__name__ for func in aggs])
+
+        log.debug('generating summary')
         t0 = mstime()
-        df = pd.read_csv(data, na_values=navals, low_memory=False)
+        df_summ = df.apply(aggs).T
+        df_summ = df_summ[[c for c in cols if c in df_summ.columns]]
+        df_summ['dtype'] = df.dtypes
+        log.debug('done generating summary: (%d msecs)' %
+                  (mstime() - t0))
 
-        log.debug('done reading %s: %d x %d (%d msecs)' % (fn_bn,
-                                                           len(df),
-                                                           len(df.columns),
-                                                           mstime() - t0))
+        return df_summ
+    # df = data
+    # if not isinstance(df, pd.DataFrame):
+    #     fn_bn = os.path.basename(data)
+    #     df = pd.read_csv(data, na_values=navals, low_memory=False)
+    #
+    # aggs = [n_not_null, n_null, n_zero, n_distinct, vlen,
+    #         min, max, n_most_common, most_common]
+    # cols = list([func.__name__ for func in aggs])
+    # df_summ = df.apply(aggs).T
+    # df_summ = df_summ[[c for c in cols if c in df_summ.columns]]
+    # df_summ['dtype'] = df.dtypes
+    #
+    # return df_summ
 
-    aggs = [n_not_null, n_null, n_zero, n_distinct, vlen,
-            min, max, most_common, n_most_common]
-    cols = list([func.__name__ for func in aggs])
-
-    log.debug('generating summary')
-    t0 = mstime()
-    df_summ = df.apply(aggs).T
-    df_summ = df_summ[[c for c in cols if c in df_summ.columns]]
-    df_summ['dtype'] = df.dtypes
-    log.debug('done generating summary: (%d msecs)' %
-              (mstime() - t0))
-
-    return df_summ
+# def n_null(s):
+#     return (s.isnull() | (s.astype(str).str.rstrip().str.len() == 0)).sum()
+#
+#
+# def n_not_null(s):
+#     return len(s) - n_null(s)
+#
+#
+# def n_zero(s):
+#     return sum(s == 0)
+#
+#
+# def n_most_common(s):
+#     return int(s.value_counts().max())
+#
+#
+# def most_common(s):
+#     return s.value_counts().idxmax()
+#
+#
+# def n_distinct(s):
+#     return len(s.value_counts())
+#
+#
+# def vlen(s):
+#     s1 = s.apply(str)
+#     lens = s1.str.len()
+#     return (np.mean(lens), len(lens.value_counts()), min(lens), max(lens))
+#
+#
+# def get_summary(data, navals=None):
+#     LOGNAME = '%s:%s' % (os.path.basename(__file__), 'get_summary()')
+#     log = get_logger(LOGNAME)
+#     df = data
+#     if not isinstance(df, pd.DataFrame):
+#         fn_bn = os.path.basename(data)
+#         log.debug('reading %s' % fn_bn)
+#
+#         t0 = mstime()
+#         df = pd.read_csv(data, na_values=navals, low_memory=False)
+#
+#         log.debug('done reading %s: %d x %d (%d msecs)' % (fn_bn,
+#                                                            len(df),
+#                                                            len(df.columns),
+#                                                            mstime() - t0))
+#
+#     aggs = [n_not_null, n_null, n_zero, n_distinct, vlen,
+#             min, max, most_common, n_most_common]
+#     cols = list([func.__name__ for func in aggs])
+#
+#     log.debug('generating summary')
+#     t0 = mstime()
+#     df_summ = df.apply(aggs).T
+#     df_summ = df_summ[[c for c in cols if c in df_summ.columns]]
+#     df_summ['dtype'] = df.dtypes
+#     log.debug('done generating summary: (%d msecs)' %
+#               (mstime() - t0))
+#
+#     return df_summ
 
 
 def load_files(fnames, pwd=None, delims=None, dtype=str,
@@ -180,16 +257,16 @@ def coalesce(df, cols):
     return coalesced
 
 
-def freq(df, attgrp, agglvl=0, multi_idx=False):
+def freq(df, attgrp, agglvl=0, multi_idx=False, cumsum=False):
     attsumm = None
     attgrp = [attgrp] if isstring(attgrp) else attgrp
     if len(attgrp) == 1:
         agglvl = 0
         att = attgrp[0]
-        attsumm = pd.DataFrame({'COUNT': df[att].value_counts()})
+        attsumm = pd.DataFrame({'COUNT': df[att].value_counts(dropna=False)})
         attsumm.index.names = [att]
     else:
-        attsumm = df[attgrp].groupby(attgrp).agg(lambda x: len(x))
+        attsumm = df[attgrp].groupby(attgrp, dropna=False).agg(lambda x: len(x))
         attsumm = attsumm.reset_index(name='COUNT')
     attsumm = attsumm.sort_values(['COUNT'], ascending=[False])
     if agglvl > 0:
@@ -197,11 +274,13 @@ def freq(df, attgrp, agglvl=0, multi_idx=False):
             attgrp[0:agglvl] + ['COUNT'],
             ascending=['True'] * agglvl + [False])
         attsumm['PERC'] = attsumm.groupby(
-            attgrp[0:agglvl]).COUNT.apply(lambda x: 100 * x / sum(x))
-        attsumm['CUMPERC'] = attsumm.groupby(attgrp[0:agglvl]).PERC.cumsum()
+            attgrp[0:agglvl], dropna=False).COUNT.apply(lambda x: 100 * x / sum(x))
+        if cumsum:
+            attsumm['CUMPERC'] = attsumm.groupby(attgrp[0:agglvl], dropna=False).PERC.cumsum()
     else:
         attsumm['PERC'] = 100 * attsumm.COUNT / sum(attsumm.COUNT)
-        attsumm['CUMPERC'] = attsumm.PERC.cumsum()
+        if cumsum:
+            attsumm['CUMPERC'] = attsumm.PERC.cumsum()
     if multi_idx:
         attsumm.set_index(attgrp, inplace=True)
     return attsumm
