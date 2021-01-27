@@ -102,7 +102,10 @@ def n_most_common(s):
 
 
 def most_common(s):
-    return s.value_counts().idxmax()
+    if s is None:
+        return None
+    else:
+        return s.value_counts().idxmax()
 
 
 def n_distinct(s):
