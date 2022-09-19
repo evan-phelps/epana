@@ -27,7 +27,7 @@ def cached(func):
     return wrapper
 
 
-@throttle.throttle(per_sec=30)
+@throttle.throttle(per_sec=20)
 @cached
 def rxnorm_req(resource, **kwargs):
     is_json = True
@@ -45,15 +45,21 @@ def rxnorm_req(resource, **kwargs):
 
     try:
         resp = requests.get(req, timeout=(1, 1))
-    except requests.exceptions.Timeout:
+    except: #requests.exceptions.Timeout:
         try:
+            #print('Timeout 1. Retrying.')
             resp = requests.get(req, timeout=(2, 2))
-        except requests.exceptions.Timeout:
+        except: #requests.exceptions.Timeout:
             try:
+                #print('Timeout 2. Retrying.')
                 resp = requests.get(req, timeout=(2, 5))
-            except requests.exceptions.Timeout:
-                print(kwargs)
-                return None
+            except: #requests.exceptions.Timeout:
+                try:
+                    print('Timout 3. Retrying')
+                    resp = requests.get(req, timout(5,10))
+                except: #requests.exceptions.Timeout:
+                    print(kwargs)
+                    return None
 
     return resp.json() if is_json else resp
 
@@ -178,7 +184,7 @@ def get_rxcui(rxname):
 
 def get_related(rxcui):
     # https://rxnav.nlm.nih.gov/REST/rxcui/174742/related?tty=SBD+SBDF
-    ttys = 'IN+PIN+MIN+SCDC+SCDF+SCDG+SCD+GPCK+BN+SBDC+SBDF+SBDG+SBD+BPCK+PSN'
+    ttys = 'IN+PIN+MIN+SCDC+SCDF+SCDG+SCD+GPCK+BN+SBDC+SBDF+SBDG+SBD+BPCK'
     json = rxnorm_req('rxcui/%s/related' % rxcui,
                       tty=ttys)
     # pprint(json)
